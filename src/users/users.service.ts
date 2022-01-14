@@ -10,6 +10,7 @@ import { User } from './users.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from 'src/auth/jwt-payload.interface';
+import { AuthUserDto } from './dto/auth-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -48,7 +49,7 @@ export class UsersService {
     }
   }
 
-  async update(id: string, UserToUpdate: User): Promise<User> {
+  async update(id: string, UserToUpdate: AuthUserDto): Promise<User> {
     const target = await this.getById(id);
     Object.keys(UserToUpdate).forEach((key) => {
       target[key] = UserToUpdate[key];
@@ -63,6 +64,10 @@ export class UsersService {
       throw new NotFoundException(`User with ${id} not found.`);
     }
     //contains num of affected rows and a relevant record
-    return res;
+    res;
+    return {
+      result: 'User successfully deleted. id: ' + id,
+      ...res,
+    };
   }
 }
