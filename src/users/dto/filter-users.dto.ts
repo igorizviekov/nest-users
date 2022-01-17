@@ -4,7 +4,11 @@ import { IsOptional, IsString } from 'class-validator';
 export class FilterUsersDto {
   @IsOptional()
   @IsString()
-  @ApiProperty({ type: String, description: 'Search value', required: false })
+  @ApiProperty({
+    type: String,
+    description: 'Search by login',
+    required: false,
+  })
   search: string;
 
   @IsString()

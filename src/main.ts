@@ -11,13 +11,13 @@ async function bootstrap() {
     .setTitle('Users API')
     .setDescription('CRUD & auth')
     //security options swagger
-    //TODO: auth swagger. https://github.com/swagger-api/swagger-ui/issues/4354
     .addBearerAuth(
       {
         type: 'http',
         scheme: 'bearer',
         description: 'Enter JWT token',
         bearerFormat: 'Token',
+        name: 'access-token',
       },
       'access-token'
     )

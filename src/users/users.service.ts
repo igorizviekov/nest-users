@@ -25,11 +25,15 @@ export class UsersService {
   }
 
   async getById(id: string): Promise<User> {
-    const match = await this.usersRepo.findOne(id);
-    if (!match) {
-      throw new NotFoundException(`User with ${id} not found.`);
+    try {
+      const match = await this.usersRepo.findOne(id);
+      if (!match) {
+        throw new NotFoundException(`User with id ${id} not found.`);
+      }
+      return match;
+    } catch (e) {
+      throw new NotFoundException(`User with id ${id} not found.`);
     }
-    return match;
   }
 
   signUp(userDto: UserDto): Promise<User> {
@@ -59,15 +63,19 @@ export class UsersService {
   }
 
   async remove(id: string): Promise<object> {
-    const res = await this.usersRepo.delete(id);
-    if (res.affected === 0) {
+    try {
+      const res = await this.usersRepo.delete(id);
+      if (res.affected === 0) {
+        throw new NotFoundException(`User with ${id} not found.`);
+      }
+      //contains num of affected rows and a relevant record
+      res;
+      return {
+        result: 'User successfully deleted. id: ' + id,
+        ...res,
+      };
+    } catch (e) {
       throw new NotFoundException(`User with ${id} not found.`);
     }
-    //contains num of affected rows and a relevant record
-    res;
-    return {
-      result: 'User successfully deleted. id: ' + id,
-      ...res,
-    };
   }
 }

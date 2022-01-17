@@ -16,7 +16,6 @@ import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
   ApiBody,
-  ApiDefaultResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiResponse,
@@ -24,16 +23,21 @@ import {
 } from '@nestjs/swagger';
 import { AuthUserDto } from './dto/auth-user.dto';
 import { DeletedUserDto } from './dto/user-deleted.dto';
+import { NotFoundDto } from './dto/user-notFoundError.dto';
+import { NotAuthorizedDto } from './dto/unauthorized-error.dto';
+import { WeakPasswordDto } from './dto/weak-password.dto';
+import { SignInDto } from './dto/signin.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get()
-  @ApiDefaultResponse({
+  @ApiResponse({
     description: 'User records',
     isArray: true,
     type: UserDto,
+    status: 200,
   })
   getAll(@Query() query: FilterUsersDto): Promise<UserDto[]> {
     const { search, limit, offset } = query;
@@ -47,7 +51,10 @@ export class UsersController {
     isArray: false,
     type: UserDto,
   })
-  @ApiNotFoundResponse({ description: 'User does not exist' })
+  @ApiNotFoundResponse({
+    description: 'User does not exist',
+    type: NotFoundDto,
+  })
   getById(@Param('id') id: string): Promise<UserDto> {
     return this.usersService.getById(id);
   }
@@ -64,6 +71,7 @@ export class UsersController {
     status: 400,
     description: 'Password is too weak',
     isArray: false,
+    type: WeakPasswordDto,
   })
   @ApiBody({ type: AuthUserDto })
   createOne(@Body() userDto: UserDto): Promise<UserDto> {
@@ -73,9 +81,13 @@ export class UsersController {
   @Post('/signin')
   @ApiResponse({
     status: 201,
-    description: 'User signed in successfully. Access token atttached',
+    description: 'User signed in successfully',
+    type: SignInDto,
   })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentails' })
+  @ApiUnauthorizedResponse({
+    description: 'Invalid credentails',
+    type: NotAuthorizedDto,
+  })
   @ApiBody({ type: AuthUserDto })
   signIn(@Body() userDto: UserDto): Promise<{ accessToken: string }> {
     return this.usersService.signIn(userDto);
@@ -88,25 +100,37 @@ export class UsersController {
     isArray: false,
     type: UserDto,
   })
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiBody({ type: AuthUserDto })
-  @ApiNotFoundResponse({ description: 'User does not exist' })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentails.' })
+  @ApiNotFoundResponse({
+    description: 'User does not exist',
+    type: NotFoundDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Invalid credentails',
+    type: NotAuthorizedDto,
+  })
   update(@Body() body: AuthUserDto, @Param('id') id: string): Promise<UserDto> {
     return this.usersService.update(id, body);
   }
 
   @UseGuards(AuthGuard())
   @Delete('/:id')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiResponse({
     status: 200,
     description: 'User Deleted',
     isArray: false,
     type: DeletedUserDto,
   })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentails' })
-  @ApiNotFoundResponse({ description: 'User does not exist' })
+  @ApiUnauthorizedResponse({
+    description: 'Invalid credentails',
+    type: NotAuthorizedDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'User does not exist',
+    type: NotFoundDto,
+  })
   remove(@Param('id') id: string): Promise<object> {
     return this.usersService.remove(id);
   }
